@@ -1,0 +1,43 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Contato{% endblock %}
+
+{% block content %}
+<section class="section page-head">
+  <div class="container narrow">
+    <h1>Fale conosco</h1>
+    <p class="lead">Envie uma mensagem pelo formulário ou use os botões de WhatsApp e Instagram.</p>
+
+    {% if store_locale or store_assistance_address %}
+    <div class="location-box">
+      <h2 class="location-title">Onde estamos</h2>
+      {% if store_locale %}<p class="location-line">{{ store_locale }}</p>{% endif %}
+      {% if store_assistance_address %}<p class="location-line">{{ store_assistance_address }}</p>{% endif %}
+    </div>
+    {% endif %}
+
+    <div class="contact-options">
+      {% if whatsapp_phone %}
+      <a class="btn btn-whatsapp btn-lg" href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}" target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>
+      {% endif %}
+      {% if instagram_url and instagram_url != '#' %}
+      <a class="btn btn-instagram-solid btn-lg" href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      {% endif %}
+    </div>
+
+    <form method="post" class="contact-form">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-field">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <span class="error">{{ field.errors }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Enviar mensagem</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

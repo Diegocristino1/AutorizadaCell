@@ -1,0 +1,69 @@
+{% extends "catalog/base.html" %}
+{% load humanize %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container detail-layout">
+    <div class="detail-media">
+      {% if product.image %}
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="detail-img">
+      {% else %}
+      <div class="placeholder-img large">{{ product.name }}</div>
+      {% endif %}
+    </div>
+    <div class="detail-info">
+      <p class="breadcrumb"><a href="{% url 'catalog:home' %}">Início</a> · <a href="{{ product.category.get_absolute_url }}">{{ product.category.name }}</a></p>
+      <h1>{{ product.name }}</h1>
+      {% if product.price is not None %}
+      <p class="detail-price">R$ {{ product.price|intcomma }}</p>
+      {% endif %}
+      {% if product.short_description %}
+      <p class="lead">{{ product.short_description }}</p>
+      {% endif %}
+      <div class="detail-body">
+        {{ product.description|linebreaks }}
+      </div>
+      <div class="detail-actions">
+        {% if whatsapp_phone %}
+        <a class="btn btn-whatsapp btn-lg" href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}%20Quero%20saber%20sobre:%20{{ product.name|urlencode }}" target="_blank" rel="noopener noreferrer">Negociar no WhatsApp</a>
+        {% endif %}
+        {% if instagram_url and instagram_url != '#' %}
+        <a class="btn btn-instagram-solid" href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">Ver no Instagram</a>
+        {% endif %}
+      </div>
+      <p class="stock-note">{% if product.in_stock %}Disponível para consulta.{% else %}Esgotado — avise-nos para reposição.{% endif %}</p>
+    </div>
+  </div>
+</section>
+
+{% if related %}
+<section class="section section-muted">
+  <div class="container">
+    <h2 class="section-title">Relacionados</h2>
+    <div class="grid-products">
+      {% for p in related %}
+      <article class="card-product">
+        <a href="{{ p.get_absolute_url }}" class="card-link">
+          <div class="card-image">
+            {% if p.image %}
+            <img src="{{ p.image.url }}" alt="{{ p.name }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-img">{{ p.name|truncatechars:24 }}</div>
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <h3>{{ p.name }}</h3>
+            {% if p.price is not None %}
+            <p class="card-price">R$ {{ p.price|intcomma }}</p>
+            {% endif %}
+          </div>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

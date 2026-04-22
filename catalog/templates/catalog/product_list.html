@@ -1,0 +1,71 @@
+{% extends "catalog/base.html" %}
+{% load humanize %}
+
+{% block title %}{% if category %}{{ category.name }}{% else %}Produtos{% endif %}{% endblock %}
+
+{% block content %}
+<section class="section page-head">
+  <div class="container">
+    <h1>{% if category %}{{ category.name }}{% else %}Todos os produtos{% endif %}</h1>
+    {% if category and category.description %}
+    <p class="subtitle">{{ category.description }}</p>
+    {% endif %}
+
+    <form class="search-bar" method="get" action="{% if category %}{% url 'catalog:category' category.slug %}{% else %}{% url 'catalog:product_list' %}{% endif %}">
+      {{ search_form.q }}
+      <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
+
+    <div class="filter-pills">
+      <a class="pill {% if not category %}active{% endif %}" href="{% url 'catalog:product_list' %}">Todos</a>
+      {% for cat in categories %}
+      <a class="pill {% if category and category.pk == cat.pk %}active{% endif %}" href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    {% if page_obj.object_list %}
+    <div class="grid-products">
+      {% for product in page_obj %}
+      <article class="card-product">
+        <a href="{{ product.get_absolute_url }}" class="card-link">
+          <div class="card-image">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-img">{{ product.name|truncatechars:28 }}</div>
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <p class="card-cat">{{ product.category.name }}</p>
+            <h3>{{ product.name }}</h3>
+            {% if product.price is not None %}
+            <p class="card-price">R$ {{ product.price|intcomma }}</p>
+            {% endif %}
+          </div>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <nav class="pagination" aria-label="Paginação">
+      {% if page_obj.has_previous %}
+      <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}">← Anterior</a>
+      {% endif %}
+      <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q|urlencode }}{% endif %}">Próxima →</a>
+      {% endif %}
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <p class="empty">Nenhum produto encontrado. Tente outra busca ou fale conosco no WhatsApp.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

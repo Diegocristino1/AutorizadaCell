@@ -1,0 +1,34 @@
+{% extends "catalog/base.html" %}
+
+{% block title %}Sobre{% endblock %}
+
+{% block content %}
+<section class="section page-head">
+  <div class="container narrow">
+    <h1>Sobre a Autorizada Cell</h1>
+    <p class="lead">Somos especialistas em smartphones <strong>Xiaomi</strong> (incluindo Redmi e POCO) e <strong>iPhone</strong>, além de acessórios selecionados para o seu dia a dia.</p>
+    {% if store_locale or store_assistance_address %}
+    <div class="location-box location-box-inline">
+      <h2 class="location-title">Localização</h2>
+      {% if store_locale %}<p class="location-line">{{ store_locale }}</p>{% endif %}
+      {% if store_assistance_address %}<p class="location-line">{{ store_assistance_address }}</p>{% endif %}
+    </div>
+    {% endif %}
+    <p>Trabalhamos com transparência: você consulta o catálogo aqui e fecha condições, cores e garantia direto pelo <strong>WhatsApp</strong> ou acompanha novidades no <strong>Instagram</strong>.</p>
+    <ul class="check-list">
+      <li>Amplo portfólio de modelos Xiaomi e Apple</li>
+      <li>Acessórios: capas, películas, carregadores, fones e mais</li>
+      <li>Atendimento rápido pelas redes sociais</li>
+    </ul>
+    <div class="hero-actions" style="margin-top:1.5rem;">
+      {% if whatsapp_phone %}
+      <a class="btn btn-whatsapp" href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+      {% endif %}
+      {% if instagram_url and instagram_url != '#' %}
+      <a class="btn btn-instagram-solid" href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+      {% endif %}
+      <a class="btn btn-primary" href="{% url 'catalog:product_list' %}">Ver produtos</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

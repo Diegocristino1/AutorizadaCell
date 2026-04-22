@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Autorizada Cell{% endblock %} — Xiaomi, iPhone e acessórios</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="logo" href="{% url 'catalog:home' %}">Autorizada <span>Cell</span></a>
+      <nav class="nav-main" aria-label="Principal">
+        <a href="{% url 'catalog:home' %}">Início</a>
+        <a href="{% url 'catalog:category' 'celulares-xiaomi' %}">Xiaomi</a>
+        <a href="{% url 'catalog:category' 'celulares-iphone' %}">iPhone</a>
+        <a href="{% url 'catalog:category' 'acessorios' %}">Acessórios</a>
+        <a href="{% url 'catalog:sobre' %}">Sobre</a>
+        <a href="{% url 'catalog:contato' %}">Contato</a>
+      </nav>
+      <div class="social-top">
+        {% if instagram_url and instagram_url != '#' %}
+        <a class="btn-social btn-instagram" href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer" title="Instagram">
+          <span class="sr-only">Instagram</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4H7.6m9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8 1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3z"/></svg>
+        </a>
+        {% endif %}
+        {% if whatsapp_phone %}
+        <a class="btn-social btn-whatsapp-outline" href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}" target="_blank" rel="noopener noreferrer" title="WhatsApp">
+          <span class="sr-only">WhatsApp</span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.94 9.94 0 0 0-8.46 15.14L2 22l5.08-1.5A9.94 9.94 0 1 0 12.04 2m0 1.8a8.14 8.14 0 0 1 8.1 8.14 8.1 8.1 0 0 1-12.2 6.98l-.41-.24-3 .88.81-2.94-.27-.44a8.12 8.12 0 0 1 6.97-12.32m4.55 11.45c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.66.8-.81.97-.15.17-.3.19-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.38-.78-1.89-.2-.5-.41-.43-.57-.44l-.48-.01c-.17 0-.45.06-.68.32-.23.25-.88.86-.88 2.1 0 1.23.9 2.42 1.02 2.58.12.17 1.77 2.7 4.28 3.79.6.26 1.07.42 1.43.54.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.07-.1-.23-.17-.48-.3z"/></svg>
+        </a>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {% if messages %}
+  <div class="container messages">
+    {% for message in messages %}
+    <p class="flash flash-{{ message.tags }}">{{ message }}</p>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <strong>Autorizada Cell</strong>
+        <p>Xiaomi, iPhone e acessórios com atendimento personalizado.</p>
+        {% if store_locale or store_assistance_address %}
+        <address class="footer-address">
+          {% if store_locale %}<span class="footer-address-line">{{ store_locale }}</span>{% endif %}
+          {% if store_assistance_address %}<span class="footer-address-line">{{ store_assistance_address }}</span>{% endif %}
+        </address>
+        {% endif %}
+      </div>
+      <div>
+        <strong>Links</strong>
+        <ul class="footer-links">
+          <li><a href="{% url 'catalog:product_list' %}">Todos os produtos</a></li>
+          <li><a href="{% url 'catalog:contato' %}">Fale conosco</a></li>
+        </ul>
+      </div>
+      <div>
+        <strong>Redes</strong>
+        <div class="footer-social">
+          {% if instagram_url and instagram_url != '#' %}
+          <a href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">Instagram</a>
+          {% endif %}
+          {% if whatsapp_phone %}
+          <a href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <p class="footer-copy">© {% now "Y" %} Autorizada Cell — Catálogo ilustrativo. Preços sujeitos a alteração.</p>
+  </footer>
+
+  {% if whatsapp_phone %}
+  <a class="whatsapp-float" href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}" target="_blank" rel="noopener noreferrer" title="Fale no WhatsApp" aria-label="Abrir conversa no WhatsApp">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.94 9.94 0 0 0-8.46 15.14L2 22l5.08-1.5A9.94 9.94 0 1 0 12.04 2m0 1.8a8.14 8.14 0 0 1 8.1 8.14 8.1 8.1 0 0 1-12.2 6.98l-.41-.24-3 .88.81-2.94-.27-.44a8.12 8.12 0 0 1 6.97-12.32m4.55 11.45c-.25-.12-1.47-.72-1.7-.8-.23-.08-.4-.12-.57.12-.17.25-.66.8-.81.97-.15.17-.3.19-.55.06-.25-.12-1.05-.39-2-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.3.37-.45.12-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.12-.57-1.38-.78-1.89-.2-.5-.41-.43-.57-.44l-.48-.01c-.17 0-.45.06-.68.32-.23.25-.88.86-.88 2.1 0 1.23.9 2.42 1.02 2.58.12.17 1.77 2.7 4.28 3.79.6.26 1.07.42 1.43.54.6.19 1.15.16 1.58.1.48-.07 1.47-.6 1.68-1.18.21-.58.21-1.08.15-1.18-.07-.1-.23-.17-.48-.3z"/></svg>
+  </a>
+  {% endif %}
+</body>
+</html>

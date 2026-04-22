@@ -1,0 +1,77 @@
+{% extends "catalog/base.html" %}
+{% load humanize %}
+
+{% block title %}Início{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-inner">
+    <div class="hero-text">
+      <p class="eyebrow">Xiaomi · iPhone · Acessórios</p>
+      <h1>Celulares e acessórios com o melhor custo-benefício</h1>
+      <p class="lead">Modelos novos e seminovos, garantia e suporte pelo WhatsApp e Instagram.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="{% url 'catalog:product_list' %}">Ver catálogo</a>
+        {% if whatsapp_phone %}
+        <a class="btn btn-whatsapp" href="https://wa.me/{{ whatsapp_phone }}?text={{ whatsapp_message_default|urlencode }}" target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>
+        {% endif %}
+        {% if instagram_url and instagram_url != '#' %}
+        <a class="btn btn-instagram-solid" href="{{ instagram_url }}" target="_blank" rel="noopener noreferrer">Seguir no Instagram</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="hero-card" aria-hidden="true">
+      <div class="hero-card-inner">
+        <span class="chip">Destaques</span>
+        <p>Linhas completas Xiaomi / Redmi / POCO e todos os iPhones recentes.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Destaques da semana</h2>
+    {% if featured_products %}
+    <div class="grid-products">
+      {% for product in featured_products %}
+      <article class="card-product">
+        <a href="{{ product.get_absolute_url }}" class="card-link">
+          <div class="card-image">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+            <div class="placeholder-img">{{ product.name|truncatechars:24 }}</div>
+            {% endif %}
+          </div>
+          <div class="card-body">
+            <p class="card-cat">{{ product.category.name }}</p>
+            <h3>{{ product.name }}</h3>
+            {% if product.price is not None %}
+            <p class="card-price">R$ {{ product.price|intcomma }}</p>
+            {% endif %}
+          </div>
+        </a>
+      </article>
+      {% endfor %}
+    </div>
+    <p class="center"><a class="link-more" href="{% url 'catalog:product_list' %}">Ver todos os produtos →</a></p>
+    {% else %}
+    <p>Nenhum produto em destaque. Acesse o admin ou rode <code>python manage.py seed_catalog</code>.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section-muted">
+  <div class="container categories-row">
+    <h2 class="section-title">Categorias</h2>
+    <div class="category-chips">
+      {% for cat in categories %}
+      <a class="chip-link" href="{{ cat.get_absolute_url }}">{{ cat.name }}</a>
+      {% empty %}
+      <p>Cadastre categorias no painel administrativo.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}
