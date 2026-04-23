@@ -83,7 +83,8 @@ ALLOWED_HOSTS: list[str] = [
     if h.strip()
 ]
 
-if _on_vercel or _on_railway or not DEBUG:
+# Cabeçalhos de proxy: nos PaaS o edge termina SSL; use TRUST_X_FORWARDED=1 p/ Nginx local.
+if _on_vercel or _on_railway or _env_is_true("TRUST_X_FORWARDED"):
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     USE_X_FORWARDED_HOST = True
 
@@ -97,20 +98,33 @@ else:
         if host:
             _csrf.append(f"https://{host}")
     if _on_railway and not _csrf:
-        # Opcional: defina RAILWAY_PUBLIC_DOMAIN=meuapp.up.railway.app (sem https) ou o URL completo.
-        raw_pub = (os.environ.get("RAILWAY_PUBLIC_DOMAIN", "") or "").strip()
-        if raw_pub:
-            if raw_pub.startswith("https://") or raw_pub.startswith("http://"):
-                _csrf.append(raw_pub.rstrip("/").split("?")[0])
+        for key in (
+            "RAILWAY_SERVICE_PUBLIC_URL",
+            "RAILWAY_PUBLIC_URL",
+            "RAILWAY_PUBLIC_DOMAIN",
+        ):
+            raw = (os.environ.get(key, "") or "").strip()
+            if not raw:
+                continue
+            if raw.startswith("https://") or raw.startswith("http://"):
+                _csrf.append(raw.rstrip("/").split("?")[0])
             else:
-                _csrf.append(f"https://{raw_pub.split('/')[0]}")
+                _csrf.append(f"https://{raw.split('/')[0]}")
+            break
 CSRF_TRUSTED_ORIGINS = _csrf
 
+# HTTPS agressivo só no PaaS (Vercel/Railway) ou com USE_SSL_REDIRECT=1.
+# Evita 301 com DEBUG=0 em runserver, pytest ou teste Client (sem TLS).
+_in_secure_edge = _on_vercel or _on_railway
+_use_https_redirect = _in_secure_edge or _env_is_true("USE_SSL_REDIRECT")
+
 if not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000
+    if _in_secure_edge or _env_is_true("USE_HTTPS_COOKIES"):
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
+    if _use_https_redirect:
+        SECURE_SSL_REDIRECT = True
+        SECURE_HSTS_SECONDS = 31536000
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_REFERRER_POLICY = "same-origin"
 
