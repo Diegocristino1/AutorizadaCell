@@ -4,6 +4,7 @@ Local: SQLite. Produção (Vercel, Railway, etc.): PostgreSQL via DATABASE_URL.
 """
 
 import os
+import warnings
 from pathlib import Path
 
 from dj_database_url import parse as parse_database_url
@@ -48,21 +49,26 @@ DEBUG = os.environ.get("DEBUG", "false" if _is_cloud else "true").lower() in (
 )
 
 _db_url = _database_url()
+# Não bloquear o arranque (Gunicorn) se ainda não houver base: em Railway/Vercel a referência
+# a DATABASE_URL em Variables pode faltar no 1.º deploy; o site usa SQLite até existir URL.
 if _on_vercel and _vercel_env in ("production", "preview") and not _db_url:
-    raise ImproperlyConfigured(
-        "Na Vercel (preview/produção), ligue um PostgreSQL (Marketplace) e verifique as "
-        "variáveis: pelo menos uma de DATABASE_URL, POSTGRES_URL ou POSTGRES_URL_NON_POOLING. "
-        "Em Environment Variables, ative-as também para o ambiente de Build (migrate no deploy)."
+    warnings.warn(
+        "Vercel: sem DATABASE_URL/POSTGRES_URL. Ligue PostgreSQL (Marketplace) e as variáveis de "
+        "Build com a URL. Enquanto isso, o SQLite pode ser usado (limitado no serverless).",
+        UserWarning,
+        stacklevel=1,
     )
-# Na Railway, adiciona o plugin PostgreSQL: o DATABASE_URL é criado na rede privada.
 if (
     _on_railway
-    and (os.environ.get("RAILWAY_ENVIRONMENT", "").lower() in ("production", "staging"))
+    and (os.environ.get("RAILWAY_ENVIRONMENT", "").lower() in ("production", "staging", "preview"))
     and not _db_url
 ):
-    raise ImproperlyConfigured(
-        "No Railway, adicione o serviço PostgreSQL e ligue-o a este app para obter DATABASE_URL, "
-        "ou defina DATABASE_URL à mão em Variables."
+    warnings.warn(
+        "Railway: sem DATABASE_URL. No dashboard: New > Database > PostgreSQL, depois no teu serviço "
+        "web > Variables > Add Reference > seleciona o Postgres e escolhe DATABASE_URL (rede privada). "
+        "Faz Redeploy. Enquanto isso, o Django usa SQLite (dados podem perder-se ao reiniciar).",
+        UserWarning,
+        stacklevel=1,
     )
 
 if not DEBUG and not os.environ.get("DJANGO_SECRET_KEY"):
