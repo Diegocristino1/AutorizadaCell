@@ -130,22 +130,114 @@ IPHONE_SHOWCASE = [
     ),
 ]
 
-ACCESSORIES = [
-    ('Carregador USB-C 67 W (Xiaomi)', 'Compatível com vários modelos.', Decimal('199.00')),
-    ('Carregador MagSafe Apple 15 W', 'Carregamento magnético original.', Decimal('449.00')),
-    ('Capa silicone iPhone 15 Pro', 'Várias cores, proteção Apple.', Decimal('249.00')),
-    ('Capa anti-impacto Xiaomi 14', 'TPU reforçado, transparente.', Decimal('89.00')),
-    ('Película de vidro 3D iPhone 16', 'Proteção bordas curvas.', Decimal('79.00')),
-    ('Película cerâmica Redmi Note 13', 'Anti-risco, sensível ao toque.', Decimal('49.00')),
-    ('Fone Bluetooth Xiaomi Buds 5', 'ANC, som Hi-Res.', Decimal('599.00')),
-    ('AirPods Pro (2ª geração)', 'USB-C, cancelamento ativo.', Decimal('1899.00')),
-    ('Cabo USB-C para Lightning 1 m', 'Certificado, carregamento rápido.', Decimal('129.00')),
-    ('Cabo USB-C para USB-C 2 m', '100 W, nylon trançado.', Decimal('89.00')),
-    ('Suporte veicular magnético MagSafe', 'Ventosa + ímã forte.', Decimal('119.00')),
-    ('Power bank 20000 mAh 45 W', 'Carrega notebook e celular.', Decimal('299.00')),
-    ('Ring light clip para selfie', 'LED regulável, USB-C.', Decimal('69.00')),
-    ('Gimbal estabilizador smartphone', '3 eixos, app dedicado.', Decimal('449.00')),
-    ('Caixa de som Bluetooth 30 W', 'À prova d’água IPX7.', Decimal('279.00')),
+# Nomes e textos alinhados às fotos em static/img/produtos/celulares/
+# (name, resumo, nome do ficheiro, preço, destaque home)
+ACCESSORY_PHOTOS = [
+    (
+        'Redmi Buds 5',
+        'Fones TWS; cancelamento ativo 46dB, som claro. Cores: branco, azul e preto.',
+        'Fone-de-ouvido-Xiaomi-Buds-5.webp',
+        Decimal('599.00'),
+        True,
+    ),
+    (
+        'KAPBOM KA-8296 — Caixa de som Bluetooth 30W RGB',
+        'Caixa 30W com luzes RGB, botão p/ trocar efeitos, design cilíndrico, portátil.',
+        'caixa de som bluetooth 30 w.webp',
+        Decimal('279.00'),
+        True,
+    ),
+    (
+        'Capa anti-impacto c/ anel (Redmi Note 14 / compatíveis)',
+        'Capa armada, proteção deslizante câmera, anel 360° e suporte kickstand, preto fosco.',
+        'capinha-anti-impacto-ring-xiaomi-redmi-note-14.webp',
+        Decimal('89.00'),
+        False,
+    ),
+    (
+        'Película 3D Cerâmica Xiaomi (CERAMICS FILM)',
+        'Borda preta; anti-rastro, resistente a choque, cola full cover; compat. anunciada 5,8" 2019.',
+        'pelicula-3d-ceramica-xiaomi.webp',
+        Decimal('49.00'),
+        False,
+    ),
+    (
+        'Power bank 20.000mAh 45W PD+ (cabos integrados)',
+        '45W PD+; 20000mAh; com alça e cabo embutido. Cores: azul, prata, preto.',
+        'Power Bank 2000 mAh 45 W.webp',
+        Decimal('299.00'),
+        True,
+    ),
+    (
+        'Apple — Cabo USB-C para Lightning 1m',
+        'Original; embalagem branca, extremidades USB-C e Lightning (1 m).',
+        'Cabo USB-C Lighning 1M.webp',
+        Decimal('129.00'),
+        False,
+    ),
+    (
+        'Cabo USB-C para USB-C (2m) — charge cable',
+        'Cabo branco USB-C / USB-C; carga e dados.',
+        'cabo-usb-tipo-c-x-tipo-c-2-metro.webp',
+        Decimal('89.00'),
+        False,
+    ),
+    (
+        'Apple — Bateria portátil MagSafe (iPhone Battery Pack)',
+        'Acessório Apple: bateria com alinhamento MagSafe, estojo e produto oficiais.',
+        'carregador-portatil-magsafe-apple-orginal.webp',
+        Decimal('899.00'),
+        False,
+    ),
+    (
+        'Carregador turbo 67W USB-C (Xiaomi) c/ cabo',
+        'Fonte 67W; carregador branco, tomada redonda, cabo USB-A→USB-C com ponteiras laranja.',
+        'Carregador USB-C 67 W (Xiaomi).webp',
+        Decimal('199.00'),
+        True,
+    ),
+    (
+        'Baseus — Suporte magnético p/ grelha de ar',
+        'Suporte veicular, cabeça magnética, clip p/ respiro, logo Baseus.',
+        'suporte veicular magnetico.jpg',
+        Decimal('119.00'),
+        False,
+    ),
+    (
+        'AirPods Pro (Apple)',
+        'Fones in-ear, estojo e cancelamento. AirPods Pro em destaque (Apple).',
+        'AirPods Pro Apple.jpg',
+        Decimal('1899.00'),
+        True,
+    ),
+    (
+        'ZHIYUN — Gimbal estabilizador 3 eixos c/ tripé e cabo',
+        'Estabilizador smartphone, joystick, rodinha, app; tripé e USB-A→USB-C no kit. Marca ZHIYUN.',
+        'Gimbal estabilizador de celular.png',
+        Decimal('449.00'),
+        False,
+    ),
+    (
+        'Ring light p/ celular c/ tripé (multiuso)',
+        'Luz anel: alimentação USB, 3 tons de luz, brilho ajustável, suporte p/ smartphone ou câmera.',
+        'Ring light para selfie.jpg',
+        Decimal('69.00'),
+        False,
+    ),
+    (
+        'Capa de silicone iPhone 15 Pro (várias cores / MagSafe)',
+        'Case soft-touch: diversas cores (terracota, azul, creme, rosa, amarelo, branco, navy…), compat. MagSafe.',
+        'Capa de silicone IPHONE 15 Pro.jpeg',
+        Decimal('249.00'),
+        False,
+    ),
+    (
+        'Película de vidro 3D tela inteira — iPhone 16 (série)',
+        'IPHONE: 16, 16 Pro, Plus e 16 Pro Max. Película de vidro 3D, tela inteira (foto ilustrativa).',
+        'Peliculas de vidro 3D IPHONES 16.jpeg',
+        Decimal('79.00'),
+        False,
+    ),
 ]
 
 
@@ -190,22 +282,9 @@ class Command(BaseCommand):
         created = 0
         fixture_xiaomi = Path(settings.BASE_DIR) / 'catalog' / 'fixtures' / 'xiaomi'
         fixture_iphone = Path(settings.BASE_DIR) / 'catalog' / 'fixtures' / 'iphone'
-
-        def add_products(items, category, featured_first=3):
-            nonlocal created
-            for i, (name, short, price) in enumerate(items):
-                slug = _unique_slug(name, slugs)
-                Product.objects.create(
-                    category=category,
-                    name=name,
-                    slug=slug,
-                    short_description=short,
-                    description=f'{short} Consulte cores e disponibilidade no WhatsApp.',
-                    price=price,
-                    featured=i < featured_first,
-                    in_stock=True,
-                )
-                created += 1
+        fixture_acessorios = (
+            Path(settings.BASE_DIR) / 'static' / 'img' / 'produtos' / 'celulares'
+        )
 
         def add_xiaomi_showcase():
             nonlocal created
@@ -253,8 +332,33 @@ class Command(BaseCommand):
                     product.image.save(image_name, File(f), save=True)
                 created += 1
 
+        def add_accessory_showcase():
+            nonlocal created
+            for name, short, image_name, price, is_featured in ACCESSORY_PHOTOS:
+                slug = _unique_slug(name, slugs)
+                path = fixture_acessorios / image_name
+                if not path.is_file():
+                    raise FileNotFoundError(
+                        f'Imagem de acessório ausente: {path}'
+                    )
+                product = Product.objects.create(
+                    category=cat_acc,
+                    name=name,
+                    slug=slug,
+                    short_description=short,
+                    description=(
+                        f'{short} Consulte cores, condições e disponibilidade no WhatsApp.'
+                    ),
+                    price=price,
+                    featured=is_featured,
+                    in_stock=True,
+                )
+                with path.open('rb') as f:
+                    product.image.save(image_name, File(f), save=True)
+                created += 1
+
         add_xiaomi_showcase()
         add_iphone_showcase()
-        add_products(ACCESSORIES, cat_acc, featured_first=2)
+        add_accessory_showcase()
 
         self.stdout.write(self.style.SUCCESS(f'Catálogo criado: {created} produtos em 3 categorias.'))
