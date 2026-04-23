@@ -1,6 +1,6 @@
 """
 Django settings for loja_celulares project.
-Local: SQLite. Produção (Vercel): PostgreSQL via DATABASE_URL.
+Local: SQLite. Produção (Vercel, Railway, etc.): PostgreSQL via DATABASE_URL.
 """
 
 import os
@@ -21,7 +21,7 @@ def _env_is_true(name: str) -> bool:
 
 
 def _database_url() -> str | None:
-    """Vercel/Neon usam muitas vezes POSTGRES_URL em vez de DATABASE_URL."""
+    """Railway (e outros) injetam DATABASE_URL; Vercel/Neon usam às vezes POSTGRES_URL."""
     for key in (
         "DATABASE_URL",
         "POSTGRES_URL_NON_POOLING",
@@ -35,10 +35,13 @@ def _database_url() -> str | None:
     return None
 
 
-# Vercel define VERCEL=1. VERCEL_ENV: development (vercel dev), preview, production.
+# Vercel: VERCEL=1, VERCEL_ENV. Railway: RAILWAY_ENVIRONMENT, RAILWAY_PROJECT_ID, etc.
 _on_vercel = bool(os.environ.get("VERCEL"))
 _vercel_env = os.environ.get("VERCEL_ENV", "")
-DEBUG = os.environ.get("DEBUG", "false" if _on_vercel else "true").lower() in (
+_on_railway = bool(os.environ.get("RAILWAY_ENVIRONMENT") or os.environ.get("RAILWAY_PROJECT_ID"))
+_is_cloud = _on_vercel or _on_railway
+
+DEBUG = os.environ.get("DEBUG", "false" if _is_cloud else "true").lower() in (
     "1",
     "true",
     "yes",
@@ -51,27 +54,36 @@ if _on_vercel and _vercel_env in ("production", "preview") and not _db_url:
         "variáveis: pelo menos uma de DATABASE_URL, POSTGRES_URL ou POSTGRES_URL_NON_POOLING. "
         "Em Environment Variables, ative-as também para o ambiente de Build (migrate no deploy)."
     )
+# Na Railway, adiciona o plugin PostgreSQL: o DATABASE_URL é criado na rede privada.
+if (
+    _on_railway
+    and (os.environ.get("RAILWAY_ENVIRONMENT", "").lower() in ("production", "staging"))
+    and not _db_url
+):
+    raise ImproperlyConfigured(
+        "No Railway, adicione o serviço PostgreSQL e ligue-o a este app para obter DATABASE_URL, "
+        "ou defina DATABASE_URL à mão em Variables."
+    )
 
-# Em produção a chave é obrigatória. No *build* da Vercel, muitos esquecem de marcar a var para Build
-# — o migrate falha; por isso a mensagem abaixo indica o painel.
 if not DEBUG and not os.environ.get("DJANGO_SECRET_KEY"):
     raise ImproperlyConfigured(
-        "Defina DJANGO_SECRET_KEY no projeto Vercel. Em Environment Variables, edita a variável e "
-        "garante que aplica a Production, Preview e (importante) ao *Build* — o comando migrate roda aí."
+        "Defina a variável DJANGO_SECRET_KEY (produção). Na Vercel, inclui também o ambiente de "
+        "Build; na Railway, em Variables do serviço (Release/Migrate e Web usam a mesma imagem)."
     )
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
     "django-insecure-dev-only-rotacione-antes-de-produção",
 )
 
-_allowed_default = "127.0.0.1,localhost,testserver,.vercel.app"
+# Domínio público do Railway: *.up.railway.app; use ALLOWED_HOSTS se tiveres domínio custom.
+_allowed_default = "127.0.0.1,localhost,testserver,.vercel.app,.up.railway.app"
 ALLOWED_HOSTS: list[str] = [
     h.strip()
     for h in os.environ.get("ALLOWED_HOSTS", _allowed_default).split(",")
     if h.strip()
 ]
 
-if _on_vercel or not DEBUG:
+if _on_vercel or _on_railway or not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     USE_X_FORWARDED_HOST = True
 
@@ -84,11 +96,23 @@ else:
         host = vercel_url.replace("https://", "").replace("http://", "").split("/")[0]
         if host:
             _csrf.append(f"https://{host}")
+    if _on_railway and not _csrf:
+        # Opcional: defina RAILWAY_PUBLIC_DOMAIN=meuapp.up.railway.app (sem https) ou o URL completo.
+        raw_pub = (os.environ.get("RAILWAY_PUBLIC_DOMAIN", "") or "").strip()
+        if raw_pub:
+            if raw_pub.startswith("https://") or raw_pub.startswith("http://"):
+                _csrf.append(raw_pub.rstrip("/").split("?")[0])
+            else:
+                _csrf.append(f"https://{raw_pub.split('/')[0]}")
 CSRF_TRUSTED_ORIGINS = _csrf
 
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_REFERRER_POLICY = "same-origin"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -103,6 +127,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -137,7 +162,9 @@ if _db_url:
             _db_url,
             conn_max_age=600,
             conn_health_checks=True,
-            ssl_require=_on_vercel or _env_is_true("POSTGRES_SSL_REQUIRE"),
+            ssl_require=_on_vercel
+            or _on_railway
+            or _env_is_true("POSTGRES_SSL_REQUIRE"),
         )
     }
 else:
@@ -167,6 +194,17 @@ THOUSAND_SEPARATOR = "."
 STATIC_URL = "static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+# WhiteNoise: em produção usa compressão; em DEBUG o runserver continua a servir a pasta static/ normalmente.
+if not DEBUG:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+        },
+    }
+    WHITENOISE_MAX_AGE = 60 * 60 * 24 * 30
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
