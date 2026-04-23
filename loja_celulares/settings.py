@@ -6,7 +6,7 @@ Local: SQLite. Produção (Vercel): PostgreSQL via DATABASE_URL.
 import os
 from pathlib import Path
 
-import dj_database_url
+from dj_database_url import parse as parse_database_url
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
@@ -20,6 +20,21 @@ def _env_is_true(name: str) -> bool:
     return os.environ.get(name, "").lower() in ("1", "true", "yes", "on")
 
 
+def _database_url() -> str | None:
+    """Vercel/Neon usam muitas vezes POSTGRES_URL em vez de DATABASE_URL."""
+    for key in (
+        "DATABASE_URL",
+        "POSTGRES_URL_NON_POOLING",
+        "POSTGRES_URL",
+        "POSTGRES_PRISMA_URL",
+        "NEON_DATABASE_URL",
+    ):
+        v = os.environ.get(key, "").strip()
+        if v:
+            return v
+    return None
+
+
 # Vercel define VERCEL=1. VERCEL_ENV: development (vercel dev), preview, production.
 _on_vercel = bool(os.environ.get("VERCEL"))
 _vercel_env = os.environ.get("VERCEL_ENV", "")
@@ -29,19 +44,20 @@ DEBUG = os.environ.get("DEBUG", "false" if _on_vercel else "true").lower() in (
     "yes",
 )
 
-if (
-    _on_vercel
-    and _vercel_env in ("production", "preview")
-    and not os.environ.get("DATABASE_URL")
-):
+_db_url = _database_url()
+if _on_vercel and _vercel_env in ("production", "preview") and not _db_url:
     raise ImproperlyConfigured(
-        "Na Vercel (preview/produção), defina DATABASE_URL com um PostgreSQL. "
-        "Crie o banco no painel (Storage) ou use Neon/Supabase e ligue as variáveis."
+        "Na Vercel (preview/produção), ligue um PostgreSQL (Marketplace) e verifique as "
+        "variáveis: pelo menos uma de DATABASE_URL, POSTGRES_URL ou POSTGRES_URL_NON_POOLING. "
+        "Em Environment Variables, ative-as também para o ambiente de Build (migrate no deploy)."
     )
 
+# Em produção a chave é obrigatória. No *build* da Vercel, muitos esquecem de marcar a var para Build
+# — o migrate falha; por isso a mensagem abaixo indica o painel.
 if not DEBUG and not os.environ.get("DJANGO_SECRET_KEY"):
     raise ImproperlyConfigured(
-        "Defina a variável de ambiente DJANGO_SECRET_KEY no projeto (ex.: chave longa e aleatória)."
+        "Defina DJANGO_SECRET_KEY no projeto Vercel. Em Environment Variables, edita a variável e "
+        "garante que aplica a Production, Preview e (importante) ao *Build* — o comando migrate roda aí."
     )
 SECRET_KEY = os.environ.get(
     "DJANGO_SECRET_KEY",
@@ -115,9 +131,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "loja_celulares.wsgi.application"
 
-if os.environ.get("DATABASE_URL"):
+if _db_url:
     DATABASES = {
-        "default": dj_database_url.config(
+        "default": parse_database_url(
+            _db_url,
             conn_max_age=600,
             conn_health_checks=True,
             ssl_require=_on_vercel or _env_is_true("POSTGRES_SSL_REQUIRE"),
