@@ -1,4 +1,7 @@
+.venv/
+.venv*/
 venv/
+.vercel/
 __pycache__/
 *.py[cod]
 *.sqlite3
